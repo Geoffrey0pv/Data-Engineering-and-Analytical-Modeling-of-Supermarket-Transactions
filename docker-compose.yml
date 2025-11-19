@@ -10,16 +10,16 @@ x-airflow-common:
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false' 
-    AIRFLOW__WEBSERVER__DEFAULT_UI_USER: 'admin' # Usuario por defecto
-    AIRFLOW__WEBSERVER__DEFAULT_UI_PASSWORD: 'admin' # Contraseña por defecto
-    JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__WEBSERVER__DEFAULT_UI_USER: 'admin'
+    AIRFLOW__WEBSERVER__DEFAULT_UI_PASSWORD: 'admin'
+    JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./scripts:/opt/airflow/scripts
-    - ./data:/opt/airflow/data # Montamos el Data Lake en Airflow
+    - ./data:/opt/airflow/data
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -27,7 +27,6 @@ x-airflow-common:
       condition: service_healthy
 
 services:
-  # --- Base de Datos de Airflow ---
   postgres:
     image: postgres:13
     environment:
@@ -42,7 +41,6 @@ services:
       retries: 5
     restart: always
 
-  # --- Airflow Webserver (UI) ---
   airflow-webserver:
     <<: *airflow-common
     command: webserver
@@ -59,7 +57,6 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  # --- Airflow Scheduler (El corazón) ---
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
@@ -68,67 +65,48 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-
-  # --- Inicialización de Airflow ---
   airflow-init:
     <<: *airflow-common
-    entrypoint: /bin/bash
-    # Este comando inicializa la DB y crea el usuario admin
-    command:
-      - -c
-      - |
-        if [[ -z "${AIRFLOW_UID}" ]]; then
-          echo
-          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
-          echo "If you are on Linux, you should set AIRFLOW_UID to your user id."
-          echo
-        fi
-        airflow db init
-        airflow users create \
-          --username admin \
-          --firstname Admin \
-          --lastname User \
-          --role Admin \
-          --email admin@example.com \
-          --password admin
+    command: version
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
       _AIRFLOW_WWW_USER_CREATE: 'true'
-      _AIRFLOW_WWW_USER_PASSWORD: 'admin'
-    user: "0:0"
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-admin}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-admin}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ./data:/opt/airflow/data
-
-  # --- SPARK MASTER ---
   spark-master:
-    image: bitnami/spark:3.4.1
+    image: apache/spark:3.5.0
+    user: root
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_SECRET=secret_key
     ports:
-      - "8081:8080" # UI de Spark Master
-      - "7077:7077" # Puerto para enviar jobs
+      - "8081:8080"
+      - "7077:7077"
     volumes:
-      - ./data:/opt/bitnami/spark/data # Data Lake compartido
-      - ./scripts:/opt/bitnami/spark/scripts # Scripts compartidos
+      - ./data:/opt/spark/data
+      - ./scripts:/opt/spark/scripts
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
 
-  # --- SPARK WORKER ---
   spark-worker:
-    image: bitnami/spark:3.4.1
+    image: apache/spark:3.5.0
+    user: root
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
       - SPARK_WORKER_MEMORY=2G
       - SPARK_RPC_AUTHENTICATION_SECRET=secret_key
     volumes:
-      - ./data:/opt/bitnami/spark/data # Data Lake compartido
-      - ./scripts:/opt/bitnami/spark/scripts # Scripts compartidos
+      - ./data:/opt/spark/data
+      - ./scripts:/opt/spark/scripts
     depends_on:
       - spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
 
 volumes:
   postgres-db-volume:

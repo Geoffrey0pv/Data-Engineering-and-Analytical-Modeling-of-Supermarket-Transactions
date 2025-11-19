@@ -1,6 +1,8 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, split, explode, to_date, year, month, dayofweek, hour, weekofyear, date_format
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DateType
+import shutil
+import os
 
 def process_data():
     # 1. Inicializar Spark Session
@@ -8,12 +10,8 @@ def process_data():
         .appName("Supermarket_ETL_Transformation") \
         .getOrCreate()
 
-    # Rutas (Vistas desde dentro del contenedor de Spark)
-    # Nota: En docker-compose montamos ./data en /opt/bitnami/spark/data
-    base_path = "/opt/bitnami/spark/data/raw"
-    
-    # --- LECTURA DE DATOS ESTÁTICOS (Productos y Categorías) ---
-    
+    base_path = "/opt/spark/data/raw"
+
     # Esquema para Categories (ID|Nombre)
     cat_schema = StructType([
         StructField("ID_Categoria", IntegerType(), True),
@@ -95,16 +93,27 @@ def process_data():
     
     
     df_final = df_final.fillna({"Nombre_Categoria": "DESCONOCIDA"})
-
-    # --- CARGA (Load Intermedio) ---
     
-    # Guardar en Parquet (Trusted Zone)
-    output_path = "/opt/bitnami/spark/data/processed/transactions_master"
+    # Usar timestamp para generar un directorio único y evitar conflictos de permisos
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_path = f"/opt/spark/data/processed/transactions_master_{timestamp}"
     
     print(f"Escribiendo datos procesados en: {output_path}")
     
     df_final.write.mode("overwrite").parquet(output_path)
     
+    # Crear un symlink al directorio más reciente
+    import subprocess
+    latest_link = "/opt/spark/data/processed/transactions_master_latest"
+    try:
+        if os.path.exists(latest_link) or os.path.islink(latest_link):
+            os.unlink(latest_link)
+        os.symlink(output_path, latest_link)
+        print(f"Symlink creado: {latest_link} -> {output_path}")
+    except Exception as e:
+        print(f"No se pudo crear symlink: {e}")
+
     print("Transformación completada exitosamente.")
     spark.stop()
 

@@ -29,18 +29,18 @@ with DAG(
     # Verifica que existan archivos en la carpeta raw antes de empezar
     check_files_sensor = FileSensor(
         task_id='wait_for_transactions_files',
-        filepath='/opt/airflow/data/raw/Transactions', # Ruta dentro del container de Airflow
-        fs_conn_id='fs_default', # Conexión por defecto al sistema de archivos local
-        poke_interval=30, # Revisa cada 30 segundos
-        timeout=600 # Falla si no encuentra archivos en 10 mins
+        filepath='/opt/spark/data/raw/Transactions',
+        fs_conn_id='fs_default', 
+        poke_interval=30, 
+        timeout=600 
     )
 
     # Paso 2.2: Transformación con PySpark
     # Envía el trabajo al contenedor de Spark Master
     transform_data = SparkSubmitOperator(
         task_id='spark_transform_job',
-        application='/opt/airflow/scripts/transform_data.py', # Ruta del script visto desde Airflow
-        conn_id='spark_default', # Necesitaremos configurar esto en la UI
+        application='/opt/spark/scripts/transform_data.py',
+        conn_id='spark_default',
         verbose=True,
         # Configuración de recursos para Spark
         conf={

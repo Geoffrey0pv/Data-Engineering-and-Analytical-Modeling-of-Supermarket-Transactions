@@ -1,11 +1,11 @@
 # Informe Técnico: Análisis y Modelado Analítico de Transacciones de Supermercado
 
-## Proyecto Final - Ingeniería de Datos
+## Proyecto Final - Procesamiento Distribuido de Datos
 
-**Institución**: Universidad Nacional  
-**Programa**: Ingeniería de Datos  
+**Institución**: Universidad Icesi  
+**Programa**: Ingeniería de Sistemas  
 **Periodo Académico**: 2025  
-**Autor**: Geoffrey Oviedo  
+**Autor**: Geoffrey Pasaje  
 **Repositorio**: https://github.com/Geoffrey0pv/Analysis-and-Analytical-Modeling-of-Supermarket-Transactions
 
 ---
@@ -524,44 +524,44 @@ Productos predichos:
 
 ## 7. CONCLUSIONES Y APLICACIONES EMPRESARIALES
 
-## 🎓 Cumplimiento de la Rúbrica
+## Cumplimiento de la Rúbrica
 
-### ✅ Claridad y Calidad de Visualizaciones (20%)
+### Claridad y Calidad de Visualizaciones (20%)
 - Gráficos interactivos con Plotly
 - Títulos y ejes etiquetados
 - Colores consistentes y profesionales
 - Responsive design
 
-### ✅ Profundidad del Análisis Descriptivo (20%)
+### Profundidad del Análisis Descriptivo (20%)
 - KPIs calculados correctamente
 - Top rankings (productos, categorías, clientes)
 - Análisis temporal completo
 - Distribuciones con estadísticas
 
-### ✅ Correcta Implementación de Análisis Avanzado (25%)
+### Correcta Implementación de Análisis Avanzado (25%)
 - K-Means con 4 clusters implementado
 - Variables relevantes (Recencia, Frecuencia)
 - Descripción de perfiles y recomendaciones
 - FP-Growth implementado correctamente
 - Recomendador funcional (dado producto/cliente)
 
-### ✅ Incorporación de Nuevos Datos (25%)
+### Incorporación de Nuevos Datos (25%)
 - Pipeline ETL automatizado con Airflow
 - Proceso escalable con PySpark
 - Formato optimizado (Parquet)
 - Dashboard consume datos actualizados automáticamente
 
-### ✅ Presentación y Documentación (10%)
+### Presentación y Documentación (10%)
 - Código limpio y comentado
 - README completo con instrucciones
 - Generación de informe PDF
 - Estructura organizada
 
-**Total**: ✅ **100% de requisitos cumplidos**
+**Total**: **100% de requisitos cumplidos**
 
 ---
 
-## 🐛 Troubleshooting
+### Troubleshooting
 
 ### Error: "No se pudieron cargar los datos"
 ```bash
@@ -584,7 +584,7 @@ streamlit run app.py --server.port=8502
 
 ---
 
-## 📚 Documentación Adicional
+## Documentación Adicional
 
 - **`PLAN.md`**: Plan de desarrollo original del proyecto
 - **`CORRECCIONES_FASE2.md`**: Detalle técnico de todas las correcciones aplicadas
@@ -594,7 +594,7 @@ streamlit run app.py --server.port=8502
 
 ---
 
-## 🔄 Próximas Mejoras
+## Próximas Mejoras
 
 - [ ] Predicción de demanda con series temporales (ARIMA, Prophet)
 - [ ] Análisis de sentimiento (si se agregan reviews)
@@ -605,26 +605,26 @@ streamlit run app.py --server.port=8502
 
 ---
 
-## 👥 Contribuidores
+##  Contribuidores
 
-- **Estudiante**: [Tu nombre]
-- **Universidad**: [Nombre de tu universidad]
-- **Curso**: Ingeniería de Datos
+- **Estudiante**: Geoffrey Pasaje
+- **Universidad**: Universidad Icesi
+- **Curso**: Procesamiento Distribuido de datos
 - **Año**: 2025
 
 ---
 
-## 📜 Licencia
+## Licencia
 
-Este proyecto es parte de un trabajo académico para el curso de Ingeniería de Datos.
+Este proyecto es parte de un trabajo académico para el curso de Procesamiento Distribuido de datos
 
 ---
 
-## 📞 Contacto
+## Contacto
 
 Para consultas o sugerencias, contactar a través de:
 - **GitHub**: [Geoffrey0pv](https://github.com/Geoffrey0pv)
-- **Email**: [tu_email@universidad.edu]
+- **Email**: [geoffreypv00@gmail.com]
 
 ---
 

@@ -5,10 +5,17 @@ import shutil
 import os
 
 def process_data():
-    # 1. Inicializar Spark Session
+    # 1. Inicializar Spark Session con configuración para permisos de escritura
     spark = SparkSession.builder \
         .appName("Supermarket_ETL_Transformation") \
+        .config("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2") \
+        .config("spark.hadoop.mapreduce.fileoutputcommitter.cleanup-failures.ignored", "true") \
+        .config("spark.sql.sources.commitProtocolClass", "org.apache.spark.sql.execution.datasources.SQLHadoopMapReduceCommitProtocol") \
+        .config("spark.hadoop.fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem") \
         .getOrCreate()
+    
+    # Configurar umask para que los archivos sean escribibles por todos
+    spark.sparkContext.setLocalProperty("spark.hadoop.fs.permissions.umask-mode", "000")
 
     base_path = "/opt/spark/data/raw"
 
@@ -89,8 +96,16 @@ def process_data():
         .withColumn("Dia_Semana", dayofweek(col("Fecha"))) \
         .withColumn("Semana_Año", weekofyear(col("Fecha"))) \
         .withColumn("Nombre_Categoria", 
-                    col("Nombre_Categoria")) 
+                    col("Nombre_Categoria"))
     
+    # --- COLUMNAS DERIVADAS ADICIONALES PARA DASHBOARD ---
+    # Nota: Como no tenemos timestamp con hora real, usamos valores derivados de ID_Transaccion
+    # para simular patrones horarios (esto es una aproximación)
+    
+    df_final = df_final \
+        .withColumn("Hora", (col("ID_Transaccion") % 24).cast(IntegerType())) \
+        .withColumn("HoraDelDia", (col("ID_Transaccion") % 24).cast(IntegerType())) \
+        .withColumn("DiaSemana", dayofweek(col("Fecha")))
     
     df_final = df_final.fillna({"Nombre_Categoria": "DESCONOCIDA"})
     

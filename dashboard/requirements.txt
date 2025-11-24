@@ -1,0 +1,17 @@
+# Dashboard Streamlit - Dependencias Python
+
+# Framework web
+streamlit==1.29.0
+
+# Análisis de datos
+pandas==2.1.4
+numpy==1.26.2
+
+# Visualización
+plotly==5.18.0
+
+# Generación de reportes PDF
+reportlab==4.0.7
+
+# Utilidades
+python-dateutil==2.8.2

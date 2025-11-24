@@ -48,10 +48,35 @@ with DAG(
         }
     )
     
+    # Paso 2.3: Análisis Avanzado (K-Means + FP-Growth)
+    # Ejecuta segmentación de clientes y market basket analysis
+    advanced_analytics = SparkSubmitOperator(
+        task_id='spark_advanced_analytics',
+        application='/opt/spark/scripts/train_models.py',
+        conn_id='spark_default',
+        verbose=True,
+        conf={
+            "spark.master": "spark://spark-master:7077"
+        }
+    )
+    
+    # Paso 2.4: Exportación a CSV
+    # Convierte Parquet a CSV para consumo del Dashboard
+    export_csv = SparkSubmitOperator(
+        task_id='export_final_csv',
+        application='/opt/spark/scripts/export_to_csv.py',
+        conn_id='spark_default',
+        verbose=True,
+        conf={
+            "spark.master": "spark://spark-master:7077"
+        }
+    )
+    
     end_task = BashOperator(
         task_id='etl_completed',
-        bash_command='echo "ETL de la Fase 2 finalizado correctamente."'
+        bash_command='echo "✓ Pipeline ETL completado: Extracción → Transformación → ML Analytics → Export CSV"'
     )
 
-    # Definición del flujo
-    check_files_sensor >> transform_data >> end_task
+    # Definición del flujo completo (Pipeline lineal)
+    # 2.1 → 2.2 → 2.3 → 2.4 → Fin
+    check_files_sensor >> transform_data >> advanced_analytics >> export_csv >> end_task
